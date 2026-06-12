@@ -1,6 +1,6 @@
 # Vehicle Service Management System
 
-A comprehensive Java-based application for managing vehicle services, maintenance schedules, and service records.
+A Java-based application for managing vehicle services, maintenance schedules, and service records using JDBC and Servlets.
 
 ## 📋 Table of Contents
 
@@ -10,16 +10,15 @@ A comprehensive Java-based application for managing vehicle services, maintenanc
 - [Installation](#installation)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
-- [Configuration](#configuration)
 - [Database](#database)
-- [API Documentation](#api-documentation)
+- [Running the Application](#running-the-application)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
 
 ## 🎯 Overview
 
-The Vehicle Service Management System is a robust Java application designed to streamline vehicle maintenance operations. It helps track vehicle services, manage schedules, record maintenance history, and generate reports for service centers and vehicle owners.
+The Vehicle Service Management System is a Java web application designed to streamline vehicle maintenance operations. It helps track vehicle services, manage schedules, record maintenance history, and generate reports for service centers and vehicle owners. Built with JDBC for database operations and Servlets for web request handling.
 
 ## ✨ Features
 
@@ -29,14 +28,14 @@ The Vehicle Service Management System is a robust Java application designed to s
 - **Cost Tracking**: Monitor service costs and expenses
 - **Reports Generation**: Generate service history and maintenance reports
 - **Customer Management**: Track vehicle owners and service preferences
-- **Notifications**: Alert system for upcoming services
+- **User Authentication**: Basic login system for service personnel
 
 ## 🛠️ Technologies
 
 - **Language**: Java
-- **Build Tool**: Maven / Gradle
-- **Database**: MySQL / PostgreSQL (configurable)
-- **Framework**: Spring Boot (if applicable)
+- **Web Framework**: Servlets & JSP
+- **Database**: JDBC with MySQL/PostgreSQL
+- **Server**: Apache Tomcat
 - **Version Control**: Git
 
 ## 📦 Installation
@@ -44,9 +43,9 @@ The Vehicle Service Management System is a robust Java application designed to s
 ### Prerequisites
 
 - Java 8 or higher
-- Maven 3.6+ or Gradle 6.0+
-- Git
+- Apache Tomcat 8.0+
 - MySQL or PostgreSQL
+- Git
 
 ### Steps
 
@@ -56,106 +55,127 @@ git clone https://github.com/cozbharath/Vehicle-Service-.git
 cd Vehicle-Service-
 ```
 
-2. **Build the Project**
+2. **Setup Database**
+- Create a new database:
+```sql
+CREATE DATABASE vehicle_service;
+```
+- Import the schema from `database/schema.sql`:
 ```bash
-# Using Maven
-mvn clean install
-
-# Or using Gradle
-gradle build
+mysql -u root -p vehicle_service < database/schema.sql
 ```
 
-3. **Configure Database**
-- Update database connection properties in `application.properties` or `application.yml`
-- Create database schema using provided SQL scripts in `database/` folder
+3. **Configure Database Connection**
+- Update `src/DBConfig.java` with your database credentials:
+```java
+public class DBConfig {
+    public static final String DB_URL = "jdbc:mysql://localhost:3306/vehicle_service";
+    public static final String DB_USER = "root";
+    public static final String DB_PASSWORD = "your_password";
+    public static final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
+}
+```
 
-4. **Run the Application**
+4. **Compile Java Files**
 ```bash
-# Using Maven
-mvn spring-boot:run
+# Compile all Java files
+javac -d bin src/**/*.java
 
-# Or using Gradle
-gradle bootRun
+# Ensure MySQL JDBC driver is in classpath
+```
 
-# Or execute JAR
-java -jar target/vehicle-service-1.0.0.jar
+5. **Deploy to Tomcat**
+- Copy compiled files to Tomcat webapp directory:
+```bash
+cp -r bin/com <TOMCAT_HOME>/webapps/vehicleservice/WEB-INF/classes/
+cp -r web/* <TOMCAT_HOME>/webapps/vehicleservice/
+```
+
+6. **Start Tomcat**
+```bash
+<TOMCAT_HOME>/bin/startup.sh
+```
+
+7. **Access the Application**
+```
+http://localhost:8080/vehicleservice
 ```
 
 ## 🚀 Usage
 
 ### Basic Workflow
 
-1. Register a new vehicle with owner information
-2. Schedule maintenance based on service intervals
-3. Record completed services with details and costs
-4. Generate reports and view service history
-5. Manage customer notifications
+1. Login to the application with service personnel credentials
+2. Register new vehicles with owner information
+3. Schedule maintenance based on service intervals
+4. Record completed services with details and costs
+5. View service history and generate reports
+6. Manage customer information
 
-### Example Commands
+### Key Pages
 
-```bash
-# Start the application
-java -jar vehicle-service.jar
-
-# Access the application
-Open browser and navigate to http://localhost:8080
-```
+- **Login Page**: `login.jsp` - User authentication
+- **Dashboard**: `dashboard.jsp` - Main interface
+- **Vehicle List**: `vehicles.jsp` - View all vehicles
+- **Add Vehicle**: `add-vehicle.jsp` - Register new vehicle
+- **Service Records**: `services.jsp` - View service history
+- **Reports**: `reports.jsp` - Generate reports
 
 ## 📂 Project Structure
 
 ```
 Vehicle-Service-/
 ├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/vehicleservice/
-│   │   │       ├── controller/
-│   │   │       ├── service/
-│   │   │       ├── repository/
-│   │   │       ├── model/
-│   │   │       └── util/
-│   │   └── resources/
-│   │       ├── application.properties
-│   │       └── templates/
-│   └── test/
+│   ├── DBConfig.java              # Database configuration
+│   ├── servlets/
+│   │   ├── LoginServlet.java
+│   │   ├── VehicleServlet.java
+│   │   ├── ServiceServlet.java
+│   │   ├── ReportServlet.java
+│   │   └── LogoutServlet.java
+│   ├── models/
+│   │   ├── Vehicle.java
+│   │   ├── Owner.java
+│   │   ├── Service.java
+│   │   └── User.java
+│   ├── dao/
+│   │   ├── VehicleDAO.java
+│   │   ├── ServiceDAO.java
+│   │   ├── OwnerDAO.java
+│   │   └── UserDAO.java
+│   └── util/
+│       └── ConnectionPool.java
+├── web/
+│   ├── WEB-INF/
+│   │   └── web.xml
+│   ├── login.jsp
+│   ├── dashboard.jsp
+│   ├── vehicles.jsp
+│   ├── add-vehicle.jsp
+│   ├── services.jsp
+│   ├── reports.jsp
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── script.js
 ├── database/
 │   └── schema.sql
-├── pom.xml / build.gradle
+├── lib/
+│   └── mysql-connector-java-8.0.jar  # MySQL JDBC Driver
 └── README.md
-```
-
-## ⚙️ Configuration
-
-### Application Properties
-
-Update `src/main/resources/application.properties`:
-
-```properties
-# Server Configuration
-server.port=8080
-server.servlet.context-path=/api
-
-# Database Configuration
-spring.datasource.url=jdbc:mysql://localhost:3306/vehicle_service
-spring.datasource.username=root
-spring.datasource.password=password
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-
-# JPA Configuration
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=false
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
 ```
 
 ## 🗄️ Database
 
 ### Schema Overview
 
-- **Vehicles**: Store vehicle information
-- **Owners**: Customer/owner details
-- **Services**: Service records and history
-- **ServiceTypes**: Types of services offered
-- **Costs**: Service cost tracking
+**Tables**:
+- **users**: Login credentials for service personnel
+- **vehicles**: Vehicle information
+- **owners**: Customer/owner details
+- **services**: Service records and history
+- **service_types**: Types of services offered
+- **costs**: Service cost tracking
 
 ### Initialize Database
 
@@ -163,27 +183,57 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
 mysql -u root -p vehicle_service < database/schema.sql
 ```
 
-## 📚 API Documentation
+### Sample Schema
 
-### Endpoints
+```sql
+CREATE TABLE users (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    role VARCHAR(20)
+);
 
-#### Vehicles
-- `GET /api/vehicles` - Get all vehicles
-- `POST /api/vehicles` - Create new vehicle
-- `GET /api/vehicles/{id}` - Get vehicle by ID
-- `PUT /api/vehicles/{id}` - Update vehicle
-- `DELETE /api/vehicles/{id}` - Delete vehicle
+CREATE TABLE vehicles (
+    vehicle_id INT PRIMARY KEY AUTO_INCREMENT,
+    owner_id INT NOT NULL,
+    make VARCHAR(50),
+    model VARCHAR(50),
+    year INT,
+    license_plate VARCHAR(20),
+    FOREIGN KEY (owner_id) REFERENCES owners(owner_id)
+);
 
-#### Services
-- `GET /api/services` - Get all service records
-- `POST /api/services` - Create service record
-- `GET /api/services/{id}` - Get service by ID
-- `PUT /api/services/{id}` - Update service
-- `DELETE /api/services/{id}` - Delete service
+CREATE TABLE services (
+    service_id INT PRIMARY KEY AUTO_INCREMENT,
+    vehicle_id INT NOT NULL,
+    service_date DATETIME,
+    service_type VARCHAR(100),
+    cost DECIMAL(10, 2),
+    description TEXT,
+    FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id)
+);
+```
 
-#### Reports
-- `GET /api/reports/vehicle/{vehicleId}` - Get vehicle service history
-- `GET /api/reports/cost-summary` - Get cost summary report
+## 🔧 Running the Application
+
+### Method 1: Using Tomcat Server
+```bash
+# Start Tomcat
+<TOMCAT_HOME>/bin/startup.sh
+
+# Stop Tomcat
+<TOMCAT_HOME>/bin/shutdown.sh
+```
+
+### Method 2: Using IDE (Eclipse/IntelliJ)
+1. Import project as Dynamic Web Project
+2. Configure Tomcat runtime
+3. Add project to Tomcat server
+4. Run on server
+
+### Access Points
+- **Home**: http://localhost:8080/vehicleservice
+- **Login**: http://localhost:8080/vehicleservice/login.jsp
 
 ## 🤝 Contributing
 
@@ -203,7 +253,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 **Author**: Navabharath Podila  
 **GitHub**: [@cozbharath](https://github.com/cozbharath)  
-**Email**: [Your Email Here]
+**Repository**: [Vehicle-Service-](https://github.com/cozbharath/Vehicle-Service-)
 
 For questions, issues, or suggestions, please open an issue on the GitHub repository.
 
